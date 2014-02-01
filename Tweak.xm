@@ -135,7 +135,22 @@ static BOOL truePasscodeFailed;
 	[dateFormatter setTimeStyle:NSDateFormatterShortStyle];	
 
 	NSString *dateString = [[dateFormatter stringFromDate:date] stringByReplacingOccurrencesOfString:@":" withString:[NSString string]];
-	if (dateString.length != 4 && dateString.length < 7)
+
+	NSMutableString *strippedString = [NSMutableString stringWithCapacity:dateString.length];
+	NSScanner *scanner = [NSScanner scannerWithString:dateString];
+	NSCharacterSet *numbers = [NSCharacterSet characterSetWithCharactersInString:@"0123456789"];
+
+	while (![scanner isAtEnd])
+	{
+		NSString *buffer;
+		if ([scanner scanCharactersFromSet:numbers intoString:&buffer])
+			[strippedString appendString:buffer];
+		else
+			[scanner setScanLocation:([scanner scanLocation] + 1)];
+	}
+	
+	dateString = strippedString;
+	if (strippedString.length != 4)
 		dateString = [@"0" stringByAppendingString:dateString];
 	
 	return dateString;
