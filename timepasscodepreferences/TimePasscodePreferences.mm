@@ -15,7 +15,7 @@
 - (id)specifiers
 {
 	if(_specifiers == nil)
-		_specifiers = [[self loadSpecifiersFromPlistName:@"TimePasscodePreferences" target:self] retain];
+		_specifiers = [self loadSpecifiersFromPlistName:@"TimePasscodePreferences" target:self];
 	return _specifiers;
 }
 
