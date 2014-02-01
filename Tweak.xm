@@ -12,11 +12,14 @@ static BOOL truePasscodeFailed;
 
 - (BOOL)attemptDeviceUnlockWithPassword:(NSString *)passcode appRequested:(BOOL)requested
 {
+	if (![passcode isKindOfClass:[NSString class]])
+		return %orig;
+	
 	static NSString *settingsPath = @"/var/mobile/Library/Preferences/com.expetelek.timepasscodepreferences.plist";
 	NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:settingsPath];
 	if (!prefs)
 		prefs = [[NSMutableDictionary alloc] init];
-	
+
 	if (truePasscodeFailed)
 	{
 		BOOL result = %orig;
