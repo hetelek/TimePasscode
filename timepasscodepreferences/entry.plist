@@ -1,0 +1,10 @@
+{
+    entry = {
+	bundle = TimePasscodePreferences;
+	cell = PSLinkCell;
+	detail = TimePasscodePreferencesListController;
+	icon = TimePasscodePreferences.png;
+	isController = 1;
+	label = TimePasscode;
+    };
+}

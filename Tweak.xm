@@ -1,0 +1,141 @@
+#import <UIKit/UIKit.h>
+
+static BOOL truePasscodeFailed;
+
+@interface SBDeviceLockController : UIViewController
+
+- (NSString *)getCurrentPasscode;
+
+@end
+
+%hook SBDeviceLockController
+
+- (BOOL)attemptDeviceUnlockWithPassword:(NSString *)passcode appRequested:(BOOL)requested
+{
+	static NSString *settingsPath = @"/var/mobile/Library/Preferences/com.expetelek.timepasscodepreferences.plist";
+	NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:settingsPath];
+	if (!prefs)
+		prefs = [[NSMutableDictionary alloc] init];
+	
+	if (truePasscodeFailed)
+	{
+		BOOL result = %orig;
+		if (result)
+		{
+			[prefs setObject:passcode forKey:@"truePasscode"];
+			if ([prefs writeToFile:settingsPath atomically:YES])
+			{
+				UIAlertView *alert = [[UIAlertView alloc]
+					initWithTitle:@"Passcode Updated"
+					message:@"Your passcode has been updated."
+					delegate:nil
+					cancelButtonTitle:@"OK"
+					otherButtonTitles:nil];
+				[alert show];
+				
+				truePasscodeFailed = NO;
+			}
+		}
+		else
+		{
+			UIAlertView *alert = [[UIAlertView alloc]
+				initWithTitle:@"Passcode Changed"
+				message:@"It seems like you've changed your passcode. Please unlock your device using the true passcode to reconfigure your device."
+				delegate:nil
+				cancelButtonTitle:@"OK"
+				otherButtonTitles:nil];
+			[alert show];
+		}
+		
+		return result;
+	}
+	
+	if (![[prefs allKeys] containsObject:@"truePasscode"])
+	{
+		BOOL result = %orig;
+		if (result)
+		{
+			[prefs setObject:passcode forKey:@"truePasscode"];
+			if ([prefs writeToFile:settingsPath atomically:YES])
+			{
+				UIAlertView *alert = [[UIAlertView alloc]
+					initWithTitle:@"Device Configured"
+					message:@"You have now configured TimePasscode to work with your device."
+					delegate:nil
+					cancelButtonTitle:@"OK"
+					otherButtonTitles:nil];
+				[alert show];
+			}
+		}
+		else
+		{
+			UIAlertView *alert = [[UIAlertView alloc]
+				initWithTitle:@"Not Configured"
+				message:@"TimePasscode has not yet been configured to work with your device. Please unlock your device using the true passcode to configure it."
+				delegate:nil
+				cancelButtonTitle:@"OK"
+				otherButtonTitles:nil];
+			[alert show];
+		}
+		
+		return result;
+	}
+	
+	BOOL isEnabled = ![[prefs allKeys] containsObject:@"isEnabled"] || [prefs[@"isEnabled"] boolValue];
+	BOOL didAnswerCorrectly = NO;
+	if (isEnabled)
+	{
+		NSString *timePasscode = [self getCurrentPasscode];
+		if ([prefs[@"reverseTimePasscode"] boolValue])
+		{
+			NSMutableString *reversedString = [NSMutableString string];
+			NSInteger charIndex = [timePasscode length];
+			while (charIndex-- > 0)
+			    [reversedString appendString:[timePasscode substringWithRange:NSMakeRange(charIndex, 1)]];
+			
+			timePasscode = reversedString;
+		}
+			
+		if ([timePasscode rangeOfString:passcode].location != NSNotFound)
+		{
+			didAnswerCorrectly = YES;
+			passcode = prefs[@"truePasscode"];
+		}
+		else if (![prefs[@"allowTruePasscodeUnlock"] boolValue])
+			passcode = [NSString string];
+	}
+	
+	BOOL alteredResult = %orig(passcode, requested);
+	if (didAnswerCorrectly && !alteredResult)
+	{
+		UIAlertView *alert = [[UIAlertView alloc]
+			initWithTitle:@"Passcode Changed"
+			message:@"It seems like you've changed your passcode. Please unlock your device using the true passcode to reconfigure your device."
+			delegate:nil
+			cancelButtonTitle:@"OK"
+			otherButtonTitles:nil];
+		[alert show];
+		
+		truePasscodeFailed = YES;
+	}
+	
+	return alteredResult;
+}
+
+%new
+- (NSString *)getCurrentPasscode
+{
+	NSDate *date = [NSDate date];
+	NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+	[dateFormatter setTimeZone:[NSTimeZone localTimeZone]];
+	[dateFormatter setDateStyle:NSDateFormatterNoStyle];
+	[dateFormatter setTimeStyle:NSDateFormatterShortStyle];	
+
+	NSString *dateString = [[dateFormatter stringFromDate:date] stringByReplacingOccurrencesOfString:@":" withString:[NSString string]];
+	if (dateString.length != 4 && dateString.length < 7)
+		dateString = [@"0" stringByAppendingString:dateString];
+	
+	return dateString;
+}
+	
+%end

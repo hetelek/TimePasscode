@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>General</string>
+			<key>footerText</key>
+			<string>Changes will take effect immediately.
+
+You must have a passcode set in Settings > General > Passcode Lock.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true />
+			<key>defaults</key>
+			<string>com.expetelek.timepasscodepreferences</string>
+			<key>key</key>
+			<string>isEnabled</string>
+			<key>label</key>
+			<string>Enabled</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false />
+			<key>defaults</key>
+			<string>com.expetelek.timepasscodepreferences</string>
+			<key>key</key>
+			<string>allowTruePasscodeUnlock</string>
+			<key>label</key>
+			<string>Allow True Passcode Unlock</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false />
+			<key>defaults</key>
+			<string>com.expetelek.timepasscodepreferences</string>
+			<key>key</key>
+			<string>reverseTimePasscode</string>
+			<key>label</key>
+			<string>Reverse Time Passcode</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Links</string>
+		</dict>
+		<dict>
+			<key>icon</key>
+			<string>twitter.png</string>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>@hetelek</string>
+			<key>action</key>
+			<string>openTwitter:</string>
+		</dict>
+		<dict>
+			<key>icon</key>
+			<string>github.png</string>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>View Source</string>
+			<key>action</key>
+			<string>openGithub:</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>More by Hetelek</string>
+		</dict>
+		<dict>
+			<key>icon</key>
+			<string>colorize.png</string>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>Colorize</string>
+			<key>action</key>
+			<string>openColorize:</string>
+		</dict>
+		<dict>
+			<key>icon</key>
+			<string>vinedownloader.png</string>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>VineDownloader</string>
+			<key>action</key>
+			<string>openVineDownloader:</string>
+		</dict>
+	</array>
+	<key>title</key>
+	<string>TimePasscode</string>
+</dict>
+</plist>
