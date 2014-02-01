@@ -9,6 +9,7 @@ static BOOL truePasscodeFailed;
 @end
 
 %hook SBDeviceLockController
+static char dateFormatterHolder;
 
 - (BOOL)attemptDeviceUnlockWithPassword:(NSString *)passcode appRequested:(BOOL)requested
 {
@@ -129,10 +130,16 @@ static BOOL truePasscodeFailed;
 - (NSString *)getCurrentPasscode
 {
 	NSDate *date = [NSDate date];
-	NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-	[dateFormatter setTimeZone:[NSTimeZone localTimeZone]];
-	[dateFormatter setDateStyle:NSDateFormatterNoStyle];
-	[dateFormatter setTimeStyle:NSDateFormatterShortStyle];	
+	NSDateFormatter *dateFormatter = objc_getAssociatedObject(self, &dateFormatterHolder);
+	if (!dateFormatter)
+	{
+		dateFormatter = [[NSDateFormatter alloc] init];
+		[dateFormatter setTimeZone:[NSTimeZone localTimeZone]];
+		[dateFormatter setDateStyle:NSDateFormatterNoStyle];
+		[dateFormatter setTimeStyle:NSDateFormatterShortStyle];
+		
+		objc_setAssociatedObject(self, &dateFormatterHolder, dateFormatter, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+	}
 
 	NSString *dateString = [[dateFormatter stringFromDate:date] stringByReplacingOccurrencesOfString:@":" withString:[NSString string]];
 
