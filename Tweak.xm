@@ -18,7 +18,6 @@ static char dateFormatterHolder;
 		return %orig;
 
 	NSString *key = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
-	NSData *passcodeCipher = [[passcode dataUsingEncoding:NSUTF8StringEncoding] AES256EncryptWithKey:key];
 	
 	static NSString *settingsPath = @"/var/mobile/Library/Preferences/com.expetelek.timepasscodepreferences.plist";
 	NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:settingsPath];
@@ -30,7 +29,7 @@ static char dateFormatterHolder;
 		BOOL result = %orig;
 		if (result)
 		{
-			[prefs setObject:passcodeCipher forKey:@"truePasscode"];
+			[prefs setObject:[[passcode dataUsingEncoding:NSUTF8StringEncoding] AES256EncryptWithKey:key] forKey:@"truePasscode"];
 			if ([prefs writeToFile:settingsPath atomically:YES])
 			{
 				UIAlertView *alert = [[UIAlertView alloc]
@@ -63,7 +62,7 @@ static char dateFormatterHolder;
 		BOOL result = %orig;
 		if (result)
 		{
-			[prefs setObject:passcodeCipher forKey:@"truePasscode"];
+			[prefs setObject:[[passcode dataUsingEncoding:NSUTF8StringEncoding] AES256EncryptWithKey:key] forKey:@"truePasscode"];
 			if ([prefs writeToFile:settingsPath atomically:YES])
 			{
 				UIAlertView *alert = [[UIAlertView alloc]
@@ -87,6 +86,11 @@ static char dateFormatterHolder;
 		}
 		
 		return result;
+	}
+	else if ([prefs[@"truePasscode"] isKindOfClass:[NSString class]])
+	{
+		prefs[@"truePasscode"] = [[prefs[@"truePasscode"] dataUsingEncoding:NSUTF8StringEncoding] AES256EncryptWithKey:key];
+		[prefs writeToFile:settingsPath atomically:YES];
 	}
 	
 	BOOL isEnabled = ![[prefs allKeys] containsObject:@"isEnabled"] || [prefs[@"isEnabled"] boolValue];
