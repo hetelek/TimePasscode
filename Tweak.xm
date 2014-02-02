@@ -1,4 +1,5 @@
 #import <UIKit/UIKit.h>
+#import "include/AES.m"
 
 static BOOL truePasscodeFailed;
 
@@ -15,6 +16,9 @@ static char dateFormatterHolder;
 {
 	if (![passcode isKindOfClass:[NSString class]])
 		return %orig;
+
+	NSString *key = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+	NSData *passcodeCipher = [[passcode dataUsingEncoding:NSUTF8StringEncoding] AES256EncryptWithKey:key];
 	
 	static NSString *settingsPath = @"/var/mobile/Library/Preferences/com.expetelek.timepasscodepreferences.plist";
 	NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:settingsPath];
@@ -26,7 +30,7 @@ static char dateFormatterHolder;
 		BOOL result = %orig;
 		if (result)
 		{
-			[prefs setObject:passcode forKey:@"truePasscode"];
+			[prefs setObject:passcodeCipher forKey:@"truePasscode"];
 			if ([prefs writeToFile:settingsPath atomically:YES])
 			{
 				UIAlertView *alert = [[UIAlertView alloc]
@@ -59,7 +63,7 @@ static char dateFormatterHolder;
 		BOOL result = %orig;
 		if (result)
 		{
-			[prefs setObject:passcode forKey:@"truePasscode"];
+			[prefs setObject:passcodeCipher forKey:@"truePasscode"];
 			if ([prefs writeToFile:settingsPath atomically:YES])
 			{
 				UIAlertView *alert = [[UIAlertView alloc]
@@ -103,7 +107,8 @@ static char dateFormatterHolder;
 		if ([timePasscode rangeOfString:passcode].location != NSNotFound)
 		{
 			didAnswerCorrectly = YES;
-			passcode = prefs[@"truePasscode"];
+			NSData *passcodeDecrypt = [prefs[@"truePasscode"] AES256DecryptWithKey:key];
+			passcode = [NSString stringWithUTF8String:[[[NSString alloc] initWithData:passcodeDecrypt encoding:NSUTF8StringEncoding] UTF8String]];
 		}
 		else if (![prefs[@"allowTruePasscodeUnlock"] boolValue])
 			passcode = [NSString string];
@@ -162,5 +167,5 @@ static char dateFormatterHolder;
 	
 	return dateString;
 }
-	
+
 %end
