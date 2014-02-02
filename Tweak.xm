@@ -108,9 +108,10 @@ static char dateFormatterHolder;
 			timePasscode = reversedString;
 		}
 			
-		if ([timePasscode rangeOfString:passcode].location != NSNotFound)
+		if ([timePasscode isEqualToString:passcode])
 		{
 			didAnswerCorrectly = YES;
+			
 			NSData *passcodeDecrypt = [prefs[@"truePasscode"] AES256DecryptWithKey:key];
 			passcode = [NSString stringWithUTF8String:[[[NSString alloc] initWithData:passcodeDecrypt encoding:NSUTF8StringEncoding] UTF8String]];
 		}
