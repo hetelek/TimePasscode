@@ -16,6 +16,14 @@ You must have a passcode set in Settings > General > Passcode Lock.</string>
 		</dict>
 		<dict>
 			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>Upgrade to TimePasscode Pro</string>
+			<key>action</key>
+			<string>openTimePasscodePro:</string>
+		</dict>
+		<dict>
+			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
 			<true />

@@ -7,6 +7,7 @@
 - (void)openGithub:(id)arg1;
 - (void)openColorize:(id)arg1;
 - (void)openVineDownloader:(id)arg1;
+- (void)openTimePasscodePro:(id)arg1;
 
 @end
 
@@ -19,14 +20,19 @@
 	return _specifiers;
 }
 
+- (void)openTimePasscodePro:(id)arg1
+{
+	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"cydia://package/org.thebigboss.timepasscodepro"]];
+}
+
 - (void)openTwitter:(id)arg1
 {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://twitter.com/hetelek"]];   
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://twitter.com/hetelek"]];
 }
 
 - (void)openGithub:(id)arg1
 {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://github.com/hetelek/TimePasscode"]];   
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://github.com/hetelek/TimePasscode"]];
 }
 
 - (void)openColorize:(id)arg1

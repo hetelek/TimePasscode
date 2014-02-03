@@ -1,6 +1,7 @@
 Package: com.expetelek.timepasscode
 Name: TimePasscode
 Depends: mobilesubstrate
+Conflicts: com.expetelek.timepasscodepro, org.thebigboss.timepasscodepro
 Version: 0.0.1
 Architecture: iphoneos-arm
 Description: A tweak that sets the current passcode to the current device's time.
