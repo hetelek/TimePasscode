@@ -7,7 +7,7 @@ include theos/makefiles/common.mk
 
 TWEAK_NAME = TimePasscode
 TimePasscode_FILES = Tweak.xm
-TimePasscode_FRAMEWORKS = UIKit JavaScriptCore
+TimePasscode_FRAMEWORKS = UIKit
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
