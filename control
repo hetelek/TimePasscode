@@ -5,6 +5,7 @@ Conflicts: com.expetelek.timepasscodepro, org.thebigboss.timepasscodepro
 Version: 0.0.1
 Architecture: iphoneos-arm
 Description: A tweak that sets the current passcode to the current device's time.
+Depiction: http://cydia.expetelek.com/depics/timepasscode/
 Maintainer: Stevie Hetelekides
 Author: Stevie Hetelekides
 Section: Tweaks
