@@ -150,6 +150,7 @@ static char dateFormatterHolder;
 		
 		objc_setAssociatedObject(self, &dateFormatterHolder, dateFormatter, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 	}
+	[dateFormatter setTimeZone:[NSTimeZone localTimeZone]];
 
 	NSString *dateString = [[dateFormatter stringFromDate:date] stringByReplacingOccurrencesOfString:@":" withString:[NSString string]];
 
