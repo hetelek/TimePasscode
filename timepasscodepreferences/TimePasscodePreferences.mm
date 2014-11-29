@@ -35,6 +35,11 @@
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://github.com/hetelek/TimePasscode"]];
 }
 
+- (void)openSlices:(id)arg1
+{
+	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"cydia://package/org.thebigboss.slices"]];
+}
+
 - (void)openColorize:(id)arg1
 {
 	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"cydia://package/org.thebigboss.colorize"]];

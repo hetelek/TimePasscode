@@ -1,36 +1,44 @@
+#import <substrate.h>
 #import <UIKit/UIKit.h>
+#import <CoreFoundation/CoreFoundation.h>
 #import "include/AES.m"
 
+#define PREFERENCE_IDENTIFIER CFSTR("com.expetelek.timepasscodepreferences")
+#define ENABLED_KEY CFSTR("isEnabled")
+#define TRUE_PASSCODE_KEY CFSTR("truePasscode")
+#define ALLOW_TRUE_PASSCODE_KEY CFSTR("allowTruePasscodeUnlock")
+#define REVERSE_PASSCODE_KEY CFSTR("reverseTimePasscode")
+
+// settings
+static BOOL isEnabled;
+static BOOL allowTruePasscode;
+static BOOL reverseTimePasscode;
+static NSData *truePasscode;
+
 static BOOL truePasscodeFailed;
+static char dateFormatterHolder;
 
 @interface SBDeviceLockController : UIViewController
-
 - (NSString *)getCurrentPasscode;
-
 @end
 
 %hook SBDeviceLockController
-static char dateFormatterHolder;
-
 - (BOOL)attemptDeviceUnlockWithPassword:(NSString *)passcode appRequested:(BOOL)requested
 {
 	if (![passcode isKindOfClass:[NSString class]])
 		return %orig;
 
 	NSString *key = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
-	
-	static NSString *settingsPath = @"/var/mobile/Library/Preferences/com.expetelek.timepasscodepreferences.plist";
-	NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:settingsPath];
-	if (!prefs)
-		prefs = [[NSMutableDictionary alloc] init];
 
 	if (truePasscodeFailed)
 	{
 		BOOL result = %orig;
 		if (result)
 		{
-			[prefs setObject:[[passcode dataUsingEncoding:NSUTF8StringEncoding] AES256EncryptWithKey:key] forKey:@"truePasscode"];
-			if ([prefs writeToFile:settingsPath atomically:YES])
+			truePasscode = [[passcode dataUsingEncoding:NSUTF8StringEncoding] AES256EncryptWithKey:key];
+			CFPreferencesSetAppValue(TRUE_PASSCODE_KEY, (CFDataRef)truePasscode, PREFERENCE_IDENTIFIER);
+
+			if (CFPreferencesAppSynchronize(PREFERENCE_IDENTIFIER))
 			{
 				UIAlertView *alert = [[UIAlertView alloc]
 					initWithTitle:@"Passcode Updated"
@@ -57,13 +65,15 @@ static char dateFormatterHolder;
 		return result;
 	}
 	
-	if (![[prefs allKeys] containsObject:@"truePasscode"])
+	if (truePasscode == nil)
 	{
 		BOOL result = %orig;
 		if (result)
 		{
-			[prefs setObject:[[passcode dataUsingEncoding:NSUTF8StringEncoding] AES256EncryptWithKey:key] forKey:@"truePasscode"];
-			if ([prefs writeToFile:settingsPath atomically:YES])
+			truePasscode = [[passcode dataUsingEncoding:NSUTF8StringEncoding] AES256EncryptWithKey:key];
+			CFPreferencesSetAppValue(TRUE_PASSCODE_KEY, (CFDataRef)truePasscode, PREFERENCE_IDENTIFIER);
+
+			if (CFPreferencesAppSynchronize(PREFERENCE_IDENTIFIER))
 			{
 				UIAlertView *alert = [[UIAlertView alloc]
 					initWithTitle:@"Device Configured"
@@ -87,35 +97,27 @@ static char dateFormatterHolder;
 		
 		return result;
 	}
-	else if ([prefs[@"truePasscode"] isKindOfClass:[NSString class]])
+	else if ([truePasscode isKindOfClass:[NSString class]])
 	{
-		prefs[@"truePasscode"] = [[prefs[@"truePasscode"] dataUsingEncoding:NSUTF8StringEncoding] AES256EncryptWithKey:key];
-		[prefs writeToFile:settingsPath atomically:YES];
+		truePasscode = [[(NSString *)truePasscode dataUsingEncoding:NSUTF8StringEncoding] AES256EncryptWithKey:key];
+
+		CFPreferencesSetAppValue(TRUE_PASSCODE_KEY, (CFDataRef)truePasscode, PREFERENCE_IDENTIFIER);
+    	CFPreferencesAppSynchronize(PREFERENCE_IDENTIFIER);
 	}
 	
-	BOOL isEnabled = ![[prefs allKeys] containsObject:@"isEnabled"] || [prefs[@"isEnabled"] boolValue];
 	BOOL didAnswerCorrectly = NO;
 	if (isEnabled)
 	{
 		NSString *timePasscode = [self getCurrentPasscode];
-		if ([prefs[@"reverseTimePasscode"] boolValue])
-		{
-			NSMutableString *reversedString = [NSMutableString string];
-			NSInteger charIndex = [timePasscode length];
-			while (charIndex-- > 0)
-			    [reversedString appendString:[timePasscode substringWithRange:NSMakeRange(charIndex, 1)]];
-			
-			timePasscode = reversedString;
-		}
 			
 		if ([timePasscode isEqualToString:passcode])
 		{
 			didAnswerCorrectly = YES;
 			
-			NSData *passcodeDecrypt = [prefs[@"truePasscode"] AES256DecryptWithKey:key];
+			NSData *passcodeDecrypt = [truePasscode AES256DecryptWithKey:key];
 			passcode = [NSString stringWithUTF8String:[[[NSString alloc] initWithData:passcodeDecrypt encoding:NSUTF8StringEncoding] UTF8String]];
 		}
-		else if (![prefs[@"allowTruePasscodeUnlock"] boolValue])
+		else if (!allowTruePasscode)
 			passcode = [NSString string];
 	}
 	
@@ -173,5 +175,29 @@ static char dateFormatterHolder;
 	
 	return dateString;
 }
-
 %end
+
+static void loadSettings()
+{
+	CFPreferencesAppSynchronize(PREFERENCE_IDENTIFIER);
+	
+	Boolean keyExists;
+	isEnabled = CFPreferencesGetAppBooleanValue(ENABLED_KEY, PREFERENCE_IDENTIFIER, &keyExists);
+	isEnabled = (isEnabled || !keyExists);
+
+	allowTruePasscode = CFPreferencesGetAppBooleanValue(ALLOW_TRUE_PASSCODE_KEY, PREFERENCE_IDENTIFIER, &keyExists);
+	reverseTimePasscode = CFPreferencesGetAppBooleanValue(REVERSE_PASSCODE_KEY, PREFERENCE_IDENTIFIER, &keyExists);
+	truePasscode = (NSData *)CFBridgingRelease(CFPreferencesCopyAppValue(TRUE_PASSCODE_KEY, PREFERENCE_IDENTIFIER));
+}
+
+static void settingsChanged(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
+{
+	loadSettings();
+}
+
+%ctor
+{
+    // listen for changes in settings, load settings
+    CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, settingsChanged, CFSTR("com.expetelek.timepasscodepreferences/settingsChanged"), NULL, CFNotificationSuspensionBehaviorCoalesce);
+    loadSettings();
+}

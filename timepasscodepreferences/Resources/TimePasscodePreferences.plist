@@ -92,6 +92,16 @@ You must have a passcode set in Settings > General > Passcode Lock.</string>
 		</dict>
 		<dict>
 			<key>icon</key>
+			<string>slices.png</string>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>Slices</string>
+			<key>action</key>
+			<string>openSlices:</string>
+		</dict>
+		<dict>
+			<key>icon</key>
 			<string>colorize.png</string>
 			<key>cell</key>
 			<string>PSButtonCell</string>
