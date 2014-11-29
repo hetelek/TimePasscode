@@ -109,6 +109,15 @@ static char dateFormatterHolder;
 	if (isEnabled)
 	{
 		NSString *timePasscode = [self getCurrentPasscode];
+		if (reverseTimePasscode)		
+		{
+			NSMutableString *reversedString = [NSMutableString string];		
+			NSInteger charIndex = [timePasscode length];		
+			while (charIndex-- > 0)		
+				[reversedString appendString:[timePasscode substringWithRange:NSMakeRange(charIndex, 1)]];		
+					
+			timePasscode = reversedString;		
+		}
 			
 		if ([timePasscode isEqualToString:passcode])
 		{
